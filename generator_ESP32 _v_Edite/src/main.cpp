@@ -24,6 +24,8 @@ const int generator = 21;
 float voltage = 0.0;
 bool start_machine_success = false;
 
+bool lamp_reset = false;
+
 int start_machine_round = 0;
 
 bool debuger_test = false;
@@ -70,8 +72,11 @@ void loop()
     {
       if(start_machine_success == false)
       {
-        digitalWrite(R3,HIGH);
         run_machine();
+        if (lamp_reset == false)
+        {
+          digitalWrite(R3,HIGH);
+        }
       }
     }
     if (signal_gride == 1)
@@ -121,6 +126,12 @@ void run_machine(void)
         digitalWrite(R2,HIGH);
         machine_timer = millis();
         running_state = 2;
+      }
+      if(start_machine_round >= 4)
+      {
+        running_state = 100;
+        lamp_reset = true;
+        machine_timer = millis();
       }
       break;
     }
@@ -182,6 +193,26 @@ void run_machine(void)
       {
         running_state = 1;
         start_machine_round++;
+      }
+      break;
+    }
+    case 100: // สถานะไฟแจ้งเตือน
+    {
+      if ((millis() - machine_timer) > 750)
+      {
+        digitalWrite(R3,LOW);
+        machine_timer = millis();
+        running_state = 101;
+      }
+      break;
+    }
+    case 101: // สถานะไฟแจ้งเตือน
+    {
+      if ((millis() - machine_timer) > 750)
+      {
+        digitalWrite(R3,HIGH);
+        machine_timer = millis();
+        running_state = 100;
       }
       break;
     }
