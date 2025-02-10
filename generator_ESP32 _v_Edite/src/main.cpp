@@ -147,19 +147,29 @@ void run_machine(void)
       break;
     }
 
-    case 3: // สตาร์ทเครื่อง 5 วินาทีแลล้วเช็คสถานะไฟจากเครื่องปั่นไฟ
+    case 3: // สตาร์ทเครื่อง 7 วินาทีแลล้วเช็คสถานะไฟจากเครื่องปั่นไฟ
     {
-      if ((millis() - machine_timer) > 5000)
+      if ((millis() - machine_timer) > 7000)
       {
         digitalWrite(R4,LOW);
-        if (isnan(voltage)) // ถ้าสตาร์ทเครื่องแล้วไฟยังไม่ออกจาก generator
+        machine_timer = millis();
+        running_state = 33;
+      }
+      break;
+    }
+    
+    case 33:
+    {
+      if(voltage >= 200) // ถ้าสตาร์ทเครื่องแล้วไฟออกจาก generator
+      {
+          running_state = 4;
+          machine_timer = millis();
+      }
+      if ((millis() - machine_timer) > 10000)
+      {
+      if (isnan(voltage)) // ถ้าสตาร์ทเครื่องแล้วไฟยังไม่ออกจาก generator
         {
           running_state = 5;
-          machine_timer = millis();
-        }
-        if(voltage >= 200) // ถ้าสตาร์ทเครื่องแล้วไฟออกจาก generator
-        {
-          running_state = 4;
           machine_timer = millis();
         }
       }
@@ -178,13 +188,18 @@ void run_machine(void)
 
     case 5: // ถ้าไฟยังไม่ออกจาก generator ให้ปิด 2 คอนเผาหัว รอ 3 วินาทีแล้วปิดคอยเผาหัว
     {
-      if ((millis() - machine_timer) > 1000)
+      if ((millis() - machine_timer) > 3000)
       {
         digitalWrite(R1,LOW);
         digitalWrite(R2,LOW);
         machine_timer = millis();
         running_state = 6;
       }
+      if(voltage >= 200) // ถ้าสตาร์ทเครื่องแล้วไฟออกจาก generator
+        {
+          running_state = 4;
+          machine_timer = millis();
+        }
       break;
     }
     case 6: // รอเวลา 5 วินาทีแล้วเริ่มกระบวนการใหม่
